@@ -1,16 +1,19 @@
 package p2p
 
-import "net"
+import (
+	"net"
+	"sync"
+)
 
 type TCPTransport struct {
 	ListenAddress string
 	Listener      net.Listener
-	mu            syncRWMutex // Mutex protects peer
+	mu            sync.RWMutex // Mutex protects peer
 	peers         map[net.Addr]Peer
 }
 
 func NewTCPTransport(listener string) *TCPTransport {
-	return &TCPTransport{ListenAdress: listener}
+	return &TCPTransport{ListenAddress: listener}
 }
 
 // func Tset()

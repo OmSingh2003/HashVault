@@ -1,5 +1,6 @@
 package p2p
 
+// Declared to represent a remote node within the network.
 // Peer is an interface that represents the remote node.
 type Peer interface{}
 
