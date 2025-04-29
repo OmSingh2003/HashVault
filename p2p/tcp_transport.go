@@ -1,20 +1,62 @@
 package p2p
 
+// This file defines the TCPTransport struct and its methods.
 import (
-	"net"
-	"sync"
+	"fmt"
+	"net"  // a net package to handle network connections
+	"sync" // a sync package to handle concurrency and avoid RACE conditons
 )
 
-type TCPTransport struct {
+type TCPTransport struct { // Data structure for TCP tansport protocol
 	ListenAddress string
-	Listener      net.Listener
-	mu            sync.RWMutex // Mutex protects peer
-	peers         map[net.Addr]Peer
+	// Stores the network address on which transport instance
+	// will listen for incoming peer connections
+	Listener net.Listener
+	// Holds the underlying TCP listener object returned by net.Listener
+	//net.Listener is used for accepting incoming connections
+	// It is an interface that provides a method to accept incoming connections
+	// and returns a net.Conn object representing the connection
+	// net.Conn is an interface that represents a connection to a network endpoint
+	mu sync.RWMutex // Mutex protects peer
+	//A write/Read mutex which is used to protect the peer
+	//map from race conditons that could occur
+	// if multiple goroutines try to read or write to the map simultaneously
+	peers map[net.Addr]Peer
+	//A map holding the currently connected peers.
 }
 
 func NewTCPTransport(listener string) *TCPTransport {
 	return &TCPTransport{ListenAddress: listener}
 }
+func (t *TCPTransport) ListenAndAccept() error {
+	var err error
+	t.Listener, err = net.Listen("tcp", t.ListenAddress)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (t *TCPTransport) startAcceptLoop() {
+	for {
+		conn, err := t.Listener.Accept()
+		if err != nil {
+			fmt.Printf("TCP accept error: %s\n", err) // fixed format string
+			continue
+		}
+		go t.handleConn(conn) // optionally handle connection in a new goroutine
+	}
+}
 
-// func Tset()
-// t := NewTCPTransport("localhost:8080")
+// It would typically involve reading/writing data, handshaking, and managing peer state.
+func (t *TCPTransport) handleConn(conn net.Conn) {
+	// Ensure the connection is closed when this handler function exits.
+	defer conn.Close()
+
+	fmt.Printf("Handling connection: %s\n", conn.RemoteAddr())
+
+	// TODO: Implement the actual logic for interacting with the connected peer.
+	// - Perform any necessary handshake.
+	// - Read data/messages from the connection (often in its own loop).
+	// - Add the corresponding Peer representation to the transport's map (t.peers), using the mutex (t.mu).
+	// - Handle disconnection.
+}
