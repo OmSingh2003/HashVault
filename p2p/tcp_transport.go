@@ -54,9 +54,4 @@ func (t *TCPTransport) handleConn(conn net.Conn) {
 
 	fmt.Printf("Handling connection: %s\n", conn.RemoteAddr())
 
-	// TODO: Implement the actual logic for interacting with the connected peer.
-	// - Perform any necessary handshake.
-	// - Read data/messages from the connection (often in its own loop).
-	// - Add the corresponding Peer representation to the transport's map (t.peers), using the mutex (t.mu).
-	// - Handle disconnection.
 }

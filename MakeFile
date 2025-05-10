@@ -1,3 +1,4 @@
+# @ does not output the cmd again
 build:
 #This command build the go project and store the executable file in the bin directory and the name of executable file is fs 
 # -o means output 
@@ -9,4 +10,4 @@ run : build
 
 test:
 #This command runs the test file in the test directory
-	@go test ./... -v 
+	@go test ./... -v  
