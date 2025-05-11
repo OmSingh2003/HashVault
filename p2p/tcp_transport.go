@@ -1,10 +1,10 @@
+// HashVault/p2p/tcp_transport.go
 package p2p
 
-// This file defines the TCPTransport struct and its methods.
 import (
 	"fmt"
-	"net"  // a net package to handle network connections
-	"sync" // a sync package to handle concurrency and avoid RACE conditions
+	"net"
+	"sync"
 )
 
 // TCPeer represents the remote node over a TCP established connection
@@ -15,6 +15,7 @@ type TCPeer struct {
 	outbound bool
 }
 
+// newTCPeer creates and returns a new TCPeer instance.
 func newTCPeer(conn net.Conn, outbound bool) *TCPeer {
 	return &TCPeer{
 		conn:     conn,
@@ -22,53 +23,79 @@ func newTCPeer(conn net.Conn, outbound bool) *TCPeer {
 	}
 }
 
-type TCPTransport struct { // Data structure for TCP transport protocol
+// TCPTransport holds the state for the TCP transport layer.
+type TCPTransport struct {
 	ListenAddress string
-	// Stores the network address on which transport instance
-	// will listen for incoming peer connections
-
-	Listener net.Listener
-	// Holds the underlying TCP listener object returned by net.Listener
-	// net.Listener is used for accepting incoming connections
-	// It is an interface that provides a method to accept incoming connections
-	// and returns a net.Conn object representing the connection
-	// net.Conn is an interface that represents a connection to a network endpoint
-
-	mu sync.RWMutex // Mutex protects peer
-	// A write/Read mutex which is used to protect the peer
-	// map from race conditions that could occur
-	// if multiple goroutines try to read or write to the map simultaneously
-
-	peers map[net.Addr]Peer
-	// A map holding the currently connected peers.
+	Listener      net.Listener
+	mu            sync.RWMutex // To protect shared access to peers map
+	peers         map[net.Addr]Peer
 }
 
-func NewTCPTransport(listener string) *TCPTransport {
-	return &TCPTransport{ListenAddress: listener}
+// NewTCPTransport creates a new TCPTransport instance.
+func NewTCPTransport(listenerAddr string) *TCPTransport {
+	return &TCPTransport{
+		ListenAddress: listenerAddr,
+		peers:         make(map[net.Addr]Peer), // Initialize the peers map
+	}
 }
 
+// ListenAndAccept sets up the listener and starts the loop for accepting connections.
 func (t *TCPTransport) ListenAndAccept() error {
 	var err error
 	t.Listener, err = net.Listen("tcp", t.ListenAddress)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to listen on %s: %w", t.ListenAddress, err)
 	}
+
+	fmt.Printf("TCP transport listening on %s\n", t.ListenAddress)
+
+	// Start the accept loop in a new goroutine so ListenAndAccept can return.
+	go t.startAcceptLoop()
+
 	return nil
 }
 
+// startAcceptLoop runs a loop that accepts incoming connections.
 func (t *TCPTransport) startAcceptLoop() {
+	// It's good practice to ensure the listener is closed if the accept loop stops for any reason.
+	// defer t.Listener.Close() // Consider the best place for this based on overall application lifecycle.
+
 	for {
 		conn, err := t.Listener.Accept()
 		if err != nil {
-			fmt.Printf("TCP accept error: %s\n", err) // fixed format string
-			continue
+			// Handle common errors, like when the listener is closed.
+			if opError, ok := err.(*net.OpError); ok && opError.Err.Error() == "use of closed network connection" {
+				fmt.Println("Listener closed, accept loop stopping.")
+				return // Exit loop if listener is closed
+			}
+			fmt.Printf("TCP accept error: %s\n", err)
+			continue // Continue to try accepting other connections
 		}
-		go t.handleConn(conn) // optionally handle connection in a new goroutine
+		// When a connection is accepted, handle it in a new goroutine.
+		go t.handleConn(conn)
 	}
 }
 
-// It would typically involve reading data, handshaking, and managing peer state.
+// handleConn is called for each accepted connection.
 func (t *TCPTransport) handleConn(conn net.Conn) {
-	peer := newTCPeer(conn, true)
-	fmt.Printf("New incoming connection: %s\n", peer.conn.RemoteAddr())
+	// You can create a peer object if you need to manage state for this connection.
+	// Since the connection is accepted by our listener, 'outbound' is false.
+	_ = newTCPeer(conn, false) // The peer variable isn't used further in this specific example,
+	                            // but creating it might be part of your broader design.
+
+	// Print the desired message to the console.
+	fmt.Println("1 incomming connection") // Note: "incomming" is as per your request.
+
+	// At this point, the connection `conn` is open.
+	// If you want to immediately close it after printing, you would add:
+	// conn.Close()
+	// However, for `telnet` to stay connected until you manually close it from the telnet client,
+	// you should leave `conn.Close()` out of here or handle the connection lifecycle more explicitly
+	// (e.g., reading data from it in a loop, and closing when done or on error).
 }
+
+// Interface definitions (ensure these are in your p2p/transport.go or accessible)
+// type Peer interface{}
+// type Transport interface{
+// ListenAndAccept() error
+// }
