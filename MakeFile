@@ -1,13 +1,8 @@
-# @ does not output the cmd again
 build:
-#This command build the go project and store the executable file in the bin directory and the name of executable file is fs 
-# -o means output 
-	@go build -o bin/fs 
+	@go build -o bin/fs
 
-run : build
-#This command runs the executable file fs
+run: build
 	@./bin/fs
 
 test:
-#This command runs the test file in the test directory
-	@go test ./... -v  
+	@go test ./...

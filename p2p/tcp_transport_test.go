@@ -8,9 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestTCPTransoport defines a test function for the TCPTransport type.
-// NOTE: There is a typo in the function name; it should likely be TestTCPTransport.
-func TestTCPTransoport(t *testing.T) {
+// TestTCPTransport defines a test function for the TCPTransport type.
+func TestTCPTransport(t *testing.T) {
 	// Define the network address string that the TCPTransport instance is intended to use for listening.
 	listAddr := ":4000"
 
@@ -23,4 +22,8 @@ func TestTCPTransoport(t *testing.T) {
 	// Assert that the ListenAddress field of the created 'tr' instance matches the 'listAddr' provided to the constructor.
 	// Verifies: The constructor correctly stored the intended listen address.
 	assert.Equal(t, tr.ListenAddress, listAddr)
+
+//Server
+	tr.ListenAndAccept()
 }
+

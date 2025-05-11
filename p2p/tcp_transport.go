@@ -6,7 +6,19 @@ import (
 	"net"  // a net package to handle network connections
 	"sync" // a sync package to handle concurrency and avoid RACE conditons
 )
-
+// TCPeer represents the remote node over a TCP established connection
+type TCPeer struct {
+// conn is the undelying connection of the peer
+conn net.Conn
+// if we dial and retrieve a conn 
+outbound bool
+}
+func newTCPeer(conn net.Conn , outbound bool) *TCPeer{
+return &TCPeer {
+conn :    conn
+outbound : outbound
+}
+}
 type TCPTransport struct { // Data structure for TCP tansport protocol
 	ListenAddress string
 	// Stores the network address on which transport instance
@@ -26,7 +38,7 @@ type TCPTransport struct { // Data structure for TCP tansport protocol
 }
 
 func NewTCPTransport(listener string) *TCPTransport {
-	return &TCPTransport{ListenAddress: listener}
+return &TCPTransport{ListenAddress: listener}
 }
 func (t *TCPTransport) ListenAndAccept() error {
 	var err error
@@ -49,9 +61,7 @@ func (t *TCPTransport) startAcceptLoop() {
 
 // It would typically involve reading/writing data, handshaking, and managing peer state.
 func (t *TCPTransport) handleConn(conn net.Conn) {
-	// Ensure the connection is closed when this handler function exits.
-	defer conn.Close()
-
-	fmt.Printf("Handling connection: %s\n", conn.RemoteAddr())
-
+peer := NewTCPeer(conn , true)
+	fmt.Printf(" New incoming connection: %s\n", peer
 }
+

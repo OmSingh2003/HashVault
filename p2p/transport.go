@@ -8,4 +8,6 @@ type Peer interface{}
 // It is responsible for establishing connections between peers and sending/receiving messages.
 // Basically it handles the communication between the nodes in the network or you can say between peer -to -peer.
 // This can be in form of TCP,UDP,WebSocket, etc.
-type Transport interface{}
+type Transport interface{
+ListenAndAccept() error 
+}
