@@ -27,6 +27,7 @@ func newTCPeer(conn net.Conn, outbound bool) *TCPeer {
 type TCPTransport struct {
 	ListenAddress string
 	Listener      net.Listener
+	handshaker handshaker 
 	mu            sync.RWMutex // To protect shared access to peers map
 	peers         map[net.Addr]Peer
 }
@@ -78,24 +79,11 @@ func (t *TCPTransport) startAcceptLoop() {
 
 // handleConn is called for each accepted connection.
 func (t *TCPTransport) handleConn(conn net.Conn) {
-	// You can create a peer object if you need to manage state for this connection.
-	// Since the connection is accepted by our listener, 'outbound' is false.
+	peer:= NewTCPPeer(conn, true)
+if err:= t.shakeHands(con) ; err!=null
 	_ = newTCPeer(conn, false) // The peer variable isn't used further in this specific example,
 	                            // but creating it might be part of your broader design.
 
 	// Print the desired message to the console.
 	fmt.Println("1 incomming connection") // Note: "incomming" is as per your request.
 
-	// At this point, the connection `conn` is open.
-	// If you want to immediately close it after printing, you would add:
-	// conn.Close()
-	// However, for `telnet` to stay connected until you manually close it from the telnet client,
-	// you should leave `conn.Close()` out of here or handle the connection lifecycle more explicitly
-	// (e.g., reading data from it in a loop, and closing when done or on error).
-}
-
-// Interface definitions (ensure these are in your p2p/transport.go or accessible)
-// type Peer interface{}
-// type Transport interface{
-// ListenAndAccept() error
-// }
