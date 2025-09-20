@@ -4,7 +4,7 @@
 
 ---
 
-## 🚧 Current Status
+##  Current Status
 
 **Under active development.**  
 The foundational peer-to-peer TCP transport layer is currently being implemented.
